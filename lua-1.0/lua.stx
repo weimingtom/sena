@@ -1,0 +1,206 @@
+%start functionlist
+
+%token NIL
+%token IF THEN ELSE ELSEIF WHILE DO REPEAT UNTIL END
+%token RETURN
+%token LOCAL
+%token NUMBER
+%token FUNCTION NAME STRING
+%token DEBUG
+
+%type PrepJump
+%type expr exprlist exprlist1 varlist1
+%type fieldlist
+%type ffieldlist ffieldlist1
+%type lfieldlist lfieldlist1
+%type var objectname
+
+%left AND OR
+%left '=' NE '>' '<' LE GE
+%left CONC
+%left '+' '-'
+%left '*' '/'
+%left UNARY NOT
+
+
+%%
+
+functionlist 
+: /* empty */
+| functionlist stat sc 
+| functionlist function
+| functionlist setdebug
+;
+
+function     
+: FUNCTION NAME '(' parlist ')' block END 
+;
+
+statlist 
+: /* empty */
+| statlist stat sc
+;
+
+stat
+: stat1
+;
+
+sc	 
+: /* empty */ 
+| ';' 
+;
+
+stat1 
+: IF expr1 THEN PrepJump block PrepJump elsepart END
+| WHILE expr1 DO PrepJump block PrepJump END
+| REPEAT block UNTIL expr1 PrepJump
+| varlist1 '=' exprlist1
+| functioncall
+| LOCAL declist
+;
+
+elsepart 
+: /* empty */
+| ELSE block
+| ELSEIF expr1 THEN PrepJump block PrepJump elsepart
+;
+
+block    
+: statlist ret 
+;
+
+ret	
+: /* empty */
+| RETURN  exprlist sc
+;
+
+PrepJump 
+: /* empty */
+;
+
+expr1	 
+: expr
+;
+
+expr 
+: '(' expr ')'
+| expr1 '=' expr1	
+| expr1 '<' expr1	
+| expr1 '>' expr1	
+| expr1 NE  expr1	
+| expr1 LE  expr1	
+| expr1 GE  expr1	
+| expr1 '+' expr1 
+| expr1 '-' expr1
+| expr1 '*' expr1 
+| expr1 '/' expr1 
+| expr1 CONC expr1
+| '+' expr1 %prec UNARY	
+| '-' expr1 %prec UNARY	
+| '@' objectname fieldlist 
+| '@' '(' dimension ')'
+| var 
+| NUMBER 
+| STRING
+| NIL
+| functioncall
+| NOT expr1
+| expr1 AND PrepJump expr1
+| expr1 OR PrepJump expr1	
+;
+
+dimension    
+: /* empty */
+| expr1
+;
+
+functioncall 
+: functionvalue '(' exprlist ')'
+
+functionvalue 
+: var
+;
+
+exprlist  
+: /* empty */
+| exprlist1
+;
+
+exprlist1 
+: expr
+| exprlist1 ',' expr
+;
+
+parlist  
+: /* empty */
+| parlist1
+;
+	
+parlist1 
+: NAME
+| parlist1 ',' NAME 
+;
+
+objectname 
+: /* empty */
+| NAME
+;
+
+fieldlist  
+: '{' ffieldlist '}'  
+| '[' lfieldlist ']'  
+;
+
+ffieldlist 
+: /* empty */
+| ffieldlist1
+;
+
+ffieldlist1 
+: ffield
+| ffieldlist1 ',' ffield	
+; 
+
+ffield      
+: NAME  '=' expr1 
+;
+
+lfieldlist 
+: /* empty */
+| lfieldlist1
+;
+
+lfieldlist1 
+: /* empty */ lfield
+| lfieldlist1 ','
+;
+
+lfield 
+: expr1
+;
+
+varlist1 
+: var
+| varlist1 ',' var
+;
+
+var	  
+: NAME
+| var '[' expr1 ']'
+| var '.' NAME
+;
+
+declist 
+: NAME init
+| declist ',' NAME init
+;
+	
+init	  
+: /* empty */
+| '=' exprlist1
+;
+ 
+setdebug  
+: DEBUG
+
+%%
