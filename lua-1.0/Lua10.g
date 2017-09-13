@@ -66,18 +66,13 @@ expr1
 ;
 
 expr 
-: expr2 '=' expr
+: '(' expr ')'
+| expr_2 (('=' | '<' | '>' | '~=' | '<=' | '>=' | '+' | '-' | '*' | '/' | '..' | 'and' PrepJump | 'or' PrepJump) expr_2)*
 ;
 
-expr2 
-: var 
-| NUMBER 
-| STRING
+expr_2
+: var | NUMBER | STRING | 'nil' | functioncall | '@' objectname fieldlist | '@' '(' dimension ')' | ('+' | '-' | 'not') expr_2
 ;
-
-
-
-
 
 objectname
 : 'objectname'
