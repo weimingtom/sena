@@ -1,7 +1,7 @@
 grammar Lua10;
 
 //options {
-//  k = 3;
+//  k = 1;
 //}
 
 @header {
@@ -37,8 +37,7 @@ stat1
 : 'if' expr1 'then' PrepJump block PrepJump elsepart 'end'
 | 'while' expr1 'do' PrepJump block PrepJump 'end'
 | 'repeat' block 'until' expr1 PrepJump
-| varlist1 '=' exprlist1
-| functioncall
+| var ((',' var)* /*varlist1*/ '=' exprlist1 | '(' exprlist ')' /*functioncall*/)
 | 'local' declist
 ;
 
@@ -71,55 +70,103 @@ expr
 ;
 
 expr_2
-: var | NUMBER | STRING | 'nil' | functioncall | '@' objectname fieldlist | '@' '(' dimension ')' | ('+' | '-' | 'not') expr_2
+: var ('(' exprlist ')')? /*functioncall*/ | NUMBER | STRING | 'nil' | '@' objectname fieldlist | '@' '(' dimension ')' | ('+' | '-' | 'not') expr_2
 ;
 
-objectname
-: 'objectname'
+dimension    
+: /* empty */
+| expr1
 ;
 
-fieldlist
-: 'fieldlist'
+functioncall 
+: functionvalue '(' exprlist ')'
 ;
 
-var 
-: 'var'
+functionvalue 
+: var
 ;
 
-dimension
-: 'dimension'
+exprlist  
+: /* empty */
+| exprlist1
 ;
 
-exprlist
-: 'exprlist'
+exprlist1 
+: expr (',' expr)*
+;
+
+parlist  
+: /* empty */
+| parlist1
+;
+
+parlist1 
+: NAME (',' NAME)*
+;
+
+objectname 
+: /* empty */
+| NAME
+;
+
+fieldlist  
+: '{' ffieldlist '}'  
+| '[' lfieldlist ']'  
+;
+
+ffieldlist 
+: /* empty */
+| ffieldlist1
+;
+
+ffieldlist1 
+: ffield (',' ffield)*
+;
+
+ffield      
+: NAME '=' expr1 
+;
+
+lfieldlist 
+: /* empty */
+| lfieldlist1
+;
+
+lfieldlist1 
+: /* empty */ lfield (',' lfield)*
+;
+
+lfield 
+: expr1
+;
+
+varlist1 
+: var (',' var)*
+;
+
+var	  
+: NAME ('.' NAME | '[' expr ']')*
+;
+
+declist 
+: NAME init (',' NAME init)*
+;
+
+init	  
+: /* empty */
+| '=' exprlist1
+;
+
+setdebug  
+: '$debug'
 ;
 
 
-parlist
-: 'parlist'
-;
-
-setdebug
-: 'setdebug'
-;
 
 
 
-varlist1
-: 'varlist1'
-;
 
-exprlist1
-: 'exprlist1'
-;
 
-functioncall
-: 'functioncall'
-;
-
-declist
-: 'declist'
-;
 
 // LEXER
 
@@ -145,5 +192,5 @@ fragment
 HexDigit: ('0'..'9'|'a'..'f'|'A'..'F');
 COMMENT: '--[[' ( options {greedy=false;} : . )* ']]' {skip();};
 LINE_COMMENT: '--' ~('\n'|'\r')* '\r'? '\n' {skip();};
-WS: (' '|'\t'|'\u000C') {$channel=HIDDEN;} /*{skip();}*/ ;  
-NEWLINE: ('\r')? '\n' /*{skip();}*/ ;
+WS: (' '|'\t'|'\u000C'){$channel=HIDDEN;}; /*{skip();}*/  
+NEWLINE: (('\r')? '\n') {$channel=HIDDEN;}; /*{skip();}*/

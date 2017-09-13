@@ -116,6 +116,7 @@ dimension
 
 functioncall 
 : functionvalue '(' exprlist ')'
+;
 
 functionvalue 
 : var
@@ -172,7 +173,7 @@ lfieldlist
 
 lfieldlist1 
 : /* empty */ lfield
-| lfieldlist1 ','
+| lfieldlist1 ',' lfield
 ;
 
 lfield 
@@ -202,5 +203,6 @@ init
  
 setdebug  
 : DEBUG
+;
 
 %%
