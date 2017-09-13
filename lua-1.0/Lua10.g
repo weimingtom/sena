@@ -42,29 +42,73 @@ stat1
 | 'local' declist
 ;
 
-parlist
-: FLOAT
+elsepart 
+: /* empty */
+| 'else' block
+| 'elseif' expr1 'then' PrepJump block PrepJump elsepart
 ;
 
-setdebug
-: EXP
+block    
+: statlist ret 
 ;
 
-block
-: HEX
+ret	
+: /* empty */
+| 'return' exprlist sc
 ;
 
 PrepJump
-: 'PrepJump'
+:
 ;
 
-expr1
-: 'expr1'
+expr1	 
+: expr
 ;
 
-elsepart
-: 'elsepart'
+expr 
+: expr2 '=' expr
 ;
+
+expr2 
+: var 
+| NUMBER 
+| STRING
+;
+
+
+
+
+
+objectname
+: 'objectname'
+;
+
+fieldlist
+: 'fieldlist'
+;
+
+var 
+: 'var'
+;
+
+dimension
+: 'dimension'
+;
+
+exprlist
+: 'exprlist'
+;
+
+
+parlist
+: 'parlist'
+;
+
+setdebug
+: 'setdebug'
+;
+
+
 
 varlist1
 : 'varlist1'
@@ -85,12 +129,8 @@ declist
 // LEXER
 
 NAME: ('a'..'z'|'A'..'Z'|'_') (options{greedy=true;}: 'a'..'z'|'A'..'Z'|'_'|'0'..'9')* ;
-INT: ('0'..'9')+;
-FLOAT: INT '.' INT ;
-EXP: (INT| FLOAT) ('E'|'e') ('-')? INT;
-HEX: '0x' ('0'..'9'| 'a'..'f')+ ;
-NORMALSTRING: '"' ( EscapeSequence | ~('\\'|'"') )* '"' ;
-CHARSTRING: '\'' ( EscapeSequence | ~('\''|'\\') )* '\'';
+NUMBER 	: ('0'..'9')+ ('.' ('0'..'9')+ )?;
+STRING	: '"' ( EscapeSequence | ~('\\'|'"') )* '"' | '\'' ( EscapeSequence | ~('\''|'\\') )* '\''; 
 LONGSTRING: '['('=')*'[' ( EscapeSequence | ~('\\'|']') )* ']'('=')*']';
 fragment
 EscapeSequence
