@@ -1,8 +1,8 @@
 grammar Lua10;
 
-options {
-  k = 3;
-}
+//options {
+//  k = 3;
+//}
 
 @header {
 }
@@ -10,194 +10,76 @@ options {
 @members {
 }
 
-startup	
-: chunk EOF
+functionlist	
+: 
+(stat sc | 
+function |
+setdebug)*
 ;
 
-chunk
-: (stat (';')? )* (laststat (';')? )?
+function
+: 'function' NAME '(' parlist ')' block 'end' 
 ;
 
-block : chunk;
+statlist 
+: (stat sc)*
+;
 
 stat
-: varlist1 '=' explist1 
+: stat1
+;
+
+sc	 
+: (';')? 
+;
+
+stat1 
+: 'if' expr1 'then' PrepJump block PrepJump elsepart 'end'
+| 'while' expr1 'do' PrepJump block PrepJump 'end'
+| 'repeat' block 'until' expr1 PrepJump
+| varlist1 '=' exprlist1
 | functioncall
-| 'do' block 'end'
-| 'while' exp 'do' block 'end'
-| 'repeat' block 'until' exp
-| 'if' exp 'then' block ('elseif' exp 'then' block)* ('else' block)? 'end'
-| 'for' NAME '=' exp ',' exp (',' exp)? 'do' block 'end'
-| 'for' namelist 'in' (explist1 | functioncall) 'do' block 'end' //FIXME:
-| 'function' funcname funcbody
-| 'local' 'function' NAME funcbody
-| 'local' namelist ('=' explist1)?
-| NEWLINE 
+| 'local' declist
 ;
 
-laststat 
-: 'return' (explist1)? 
-| 'break' 
-| NEWLINE 
+parlist
+: FLOAT
 ;
 
-funcname 
-: NAME ('.' NAME)* (':' NAME)? 
+setdebug
+: EXP
+;
+
+block
+: HEX
+;
+
+PrepJump
+: 'PrepJump'
+;
+
+expr1
+: 'expr1'
+;
+
+elsepart
+: 'elsepart'
 ;
 
 varlist1
-: var (',' var)*
+: 'varlist1'
 ;
 
-namelist 
-: NAME (',' NAME)*
+exprlist1
+: 'exprlist1'
 ;
 
-//FIXME: move * to (',' exp)*
-explist1
-: exp (',' exp)*
-//XXX: not very good
-| function 
-;
-
-//FIXME:
-exp 
-: exp2 (binop exp2)* 
-;
-
-//FIXME: add function!
-exp2	
-: atom 
-| '...' 
-//XXX:move to rule explist1
-//| function
-| prefixexp 
-| tableconstructor
-| unop exp2
-;
-
-//XXX: not very good!
-atom	
-: 'nil' 
-| 'false' 
-| 'true' 
-| number 
-| string
-;
-
-//FIXME:
-var
-//: ( NAME | '(' exp ')' varSuffix ) varSuffix*
-: NAME | '(' exp ')' varSuffix+
-;
-//: NAME | '(' exp ')' varSuffix+
-
-//FIXME:
-prefixexp
-/*varOrExp nameAndArgs* */
-: NAME
-//| NAME args /*FIXME:*/
-;
-
-//FIXME:
 functioncall
-: NAME args
-//'(' var ')'
-//:varOrExp nameAndArgs+
+: 'functioncall'
 ;
 
-/*
-varOrExp
-: var  
-| '(' exp ')'
-;
-*/
-
-nameAndArgs
-: (':' NAME)? args
-;
-
-varSuffix
-: nameAndArgs* ( '[' exp ']' | '.' NAME)
-;
-
-//FIXME:
-args 
-:  '(' (explist1)? ')' 
-//| tableconstructor 
-| string 
-;
-
-//closure
-function 
-: 'function' funcbody
-;
-
-funcbody 
-: '(' (parlist1)? ')' block 'end'
-;
-
-parlist1 
-: namelist (',' '...')? 
-| '...'
-;
-
-tableconstructor 
-: '{' (fieldlist)? '}'
-;
-
-//FIXME:
-fieldlist 
-//: field (fieldsep field)* (fieldsep)?
-: NAME
-;
-
-field 
-: '[' exp ']' '=' exp 
-| NAME '=' exp 
-| exp
-;
-
-fieldsep 
-: ',' 
-| ';'
-;
-
-binop 
-: '+' 
-| '-' 
-| '*' 
-| '/' 
-| '^' 
-| '%' 
-| '..' 
-| '<' 
-| '<=' 
-| '>' 
-| '>=' 
-| '==' 
-| '~=' 
-| 'and' 
-| 'or'
-;
-
-unop 
-: '-' 
-| 'not' 
-| '#'
-;
-
-number 
-: INT 
-| FLOAT 
-| EXP 
-| HEX
-;
-
-string	
-: NORMALSTRING 
-| CHARSTRING 
-| LONGSTRING
+declist
+: 'declist'
 ;
 
 // LEXER
